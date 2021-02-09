@@ -22,16 +22,13 @@ def main():
                         transforms.ToTensor(),
                         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                     ])
-    # classes = {'bad': 0, 'good': 1, 'ugly': 2}
-    class_name = ['bad', 'good', 'ugly']
+    class_name = ['ugly', 'good', 'bad']
     class_color = [(255,0,0), (0,255,0), (0,0,255)]
 
     cv2.namedWindow("Result")
     cap = cv2.VideoCapture(2)
-    # Check if the webcam is opened correctly
     ret, first_img = cap.read()
 
-    
     # construct the argument parser and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video", help="path to the video file", default='ran.avi')
@@ -67,18 +64,19 @@ def main():
             # if the contour is too small, ignore it
             if cv2.contourArea(c) < args["min_area"]:
                   continue
-            # compute the bounding box for the contour, draw it on the frame,
-            # and update the text
+            # compute the bounding box for the contour
             (x, y, w, h) = cv2.boundingRect(c)
             l = max(h,w)
+            # get oreo and get ready for cnn
             oreo = img[y:(y + l),x:(x + l)]
-            cv2.imwrite('test_img.jpg', oreo)
             oreo = cv2.cvtColor(oreo, cv2.COLOR_BGR2RGB)
             oreo = transform( oreo ).unsqueeze(0)
 
+            # run oreo through CNN
             result = model( oreo )
             result = result.argmax(1).item()
 
+            # and update the text and rectangle
             cv2.rectangle(img, (x, y), (x+l, y+l), class_color[result], 2)
             cv2.putText(img, class_name[result], (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 1, class_color[result], 2, )
 
