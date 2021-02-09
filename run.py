@@ -11,10 +11,17 @@ import numpy as np
 
 
 def main():
+    # construct the argument parser and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-v", "--video", help="path to the video file", default='ran.avi')
+    ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
+    ap.add_argument("-m", "--model", type=str, default="models/model_best.pkl", help="minimum area size")
+    args = vars(ap.parse_args())
+
     # load pytorch model
     c, h, w = 3, 64, 64
     model = CNN(c, h, w)
-    model.load_state_dict( torch.load('model_best.pkl') )
+    model.load_state_dict( torch.load(args['model']) )
 
     # load transforms needed
     transform = transforms.Compose([
@@ -29,11 +36,6 @@ def main():
     cap = cv2.VideoCapture(2)
     ret, first_img = cap.read()
 
-    # construct the argument parser and parse the arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-v", "--video", help="path to the video file", default='ran.avi')
-    ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
-    args = vars(ap.parse_args())
 
     # get ready to save file
     height, width, _ = first_img.shape
